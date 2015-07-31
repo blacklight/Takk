@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 from array import array
 from struct import pack
 from sys import byteorder
@@ -7,15 +9,16 @@ import wave
 
 class AudioSource():
     # threshold = 500  # audio levels not normalised.
-    threshold = 3300  # audio levels not normalised.
+    threshold = 5000  # audio levels not normalised.
     chunkSize = 1024
-    silentChunks = 3 * 44100 / 1024  # about 3sec
+    rate = 48000
+    silentChunks = 2 * rate / 1024  # about 2 sec
     format = pyaudio.paInt16
     frameMaxValue = 2 ** 15 - 1
     normalizeMinusOneDb = 10 ** (-1.0 / 20)
-    rate = 44100
     channels = 1
     trimAppend = rate / 4
+    silentChunksThreshold = 10
 
     def init(self, threshold=None, chunkSize=None, silentSeconds=3):
         self.threshold = threshold if threshold is not None else __class__.threshold
@@ -28,37 +31,35 @@ class AudioSource():
         self.channels = __class__.channels
         self.trimAppend = __class__.trimAppend
 
-    def __isSilent(self, data_chunk):
+    def __isSilent(self, dataChunk):
         """Returns 'True' if below the 'silent' threshold"""
-        return max(data_chunk) < self.threshold
+        return max(dataChunk) < self.threshold
 
-    def __normalize(self, data_all):
+    def __normalize(self, dataAll):
         """Amplify the volume out to max -1dB"""
         # MAXIMUM = 16384
-        normalize_factor = (float(self.normalizeMinusOneDb * self.frameMaxValue)
-                            / max(abs(i) for i in data_all))
+        normalizeFactor = (float(self.normalizeMinusOneDb * self.frameMaxValue)
+                            / max(abs(i) for i in dataAll))
 
         r = array('h')
-        for i in data_all:
-            r.append(int(i * normalize_factor))
+        for i in dataAll:
+            r.append(int(i * normalizeFactor))
         return r
 
-    def __trim(self, data_all):
+    def __trim(self, dataAll):
         _from = 0
-        _to = len(data_all) - 1
-        for i, b in enumerate(data_all):
+        _to = len(dataAll) - 1
+        for i, b in enumerate(dataAll):
             if abs(b) > self.threshold:
-                _from = max(0, i - self.trimAppend)
+                _from = int(max(0, i - self.trimAppend))
                 break
 
-        for i, b in enumerate(reversed(data_all)):
+        for i, b in enumerate(reversed(dataAll)):
             if abs(b) > self.threshold:
-                _to = min(len(data_all) - 1, len(data_all) - 1 - i + self.trimAppend)
+                _to = int(min(len(dataAll) - 1, len(dataAll) - 1 - i + self.trimAppend))
                 break
 
-        print("FROM: %d" % _from)
-        print("TO: %d" % _to)
-        return copy.deepcopy(data_all[_from:(_to + 1)])
+        return copy.deepcopy(dataAll[_from:(_to + 1)])
 
     def record(self):
         """Record a word or words from the microphone and 
@@ -68,37 +69,36 @@ class AudioSource():
         stream = p.open(format=self.format, channels=self.channels, rate=self.rate, input=True, output=True, frames_per_buffer=self.chunkSize)
 
         silentChunks = 0
-        audio_started = False
-        data_all = array('h')
+        audioStarted = False
+        dataAll = array('h')
 
         while True:
             # little endian, signed short
-            data_chunk = array('h', stream.read(self.chunkSize))
+            dataChunk = array('h', stream.read(self.chunkSize))
             if byteorder == 'big':
-                data_chunk.byteswap()
-            data_all.extend(data_chunk)
+                dataChunk.byteswap()
+            dataAll.extend(dataChunk)
 
-            silent = self.__isSilent(data_chunk)
-            print(silent)
+            silent = self.__isSilent(dataChunk)
 
-            if audio_started:
+            if audioStarted:
                 if silent:
                     silentChunks += 1
                     if silentChunks > self.silentChunks:
                         print("AUDIO STOPPED")
                         break
-                else: 
+                elif silentChunks > self.silentChunksThreshold:
                     silentChunks = 0
             elif not silent:
                 print("AUDIO STARTED")
-                audio_started = True              
+                audioStarted = True
 
         sample_width = p.get_sample_size(self.format)
         stream.stop_stream()
         stream.close()
         p.terminate()
 
-        data_all = self.__trim(data_all)  # we trim before normalize as threshhold applies to un-normalized wave (as well as isSilent() function)
+        data_all = self.__trim(dataAll)  # we trim before normalize as threshhold applies to un-normalized wave (as well as isSilent() function)
         data_all = self.__normalize(data_all)
         return sample_width, data_all
 
