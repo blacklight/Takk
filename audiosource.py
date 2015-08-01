@@ -3,16 +3,20 @@
 from array import array
 from struct import pack
 from sys import byteorder
+
+import audiotools
 import copy
+import os
+import re
 import pyaudio
 import wave
 
 class AudioSource():
     # threshold = 500  # audio levels not normalised.
-    threshold = 5000  # audio levels not normalised.
-    chunkSize = 1024
-    rate = 48000
-    silentChunks = 2 * rate / 1024  # about 2 sec
+    threshold = 4500  # audio levels not normalised.
+    chunkSize = 32768
+    rate = 44100
+    silentChunks = 1 * rate / chunkSize  # about 2 sec
     format = pyaudio.paInt16
     frameMaxValue = 2 ** 15 - 1
     normalizeMinusOneDb = 10 ** (-1.0 / 20)
@@ -80,6 +84,7 @@ class AudioSource():
             dataAll.extend(dataChunk)
 
             silent = self.__isSilent(dataChunk)
+            print(silent)
 
             if audioStarted:
                 if silent:
@@ -93,24 +98,41 @@ class AudioSource():
                 print("AUDIO STARTED")
                 audioStarted = True
 
-        sample_width = p.get_sample_size(self.format)
+        sampleWidth = p.get_sample_size(self.format)
         stream.stop_stream()
         stream.close()
         p.terminate()
 
-        data_all = self.__trim(dataAll)  # we trim before normalize as threshhold applies to un-normalized wave (as well as isSilent() function)
-        data_all = self.__normalize(data_all)
-        return sample_width, data_all
+        dataAll = self.__trim(dataAll)  # we trim before normalize as threshhold applies to un-normalized wave (as well as isSilent() function)
+        dataAll = self.__normalize(dataAll)
+        return sampleWidth, dataAll
+
+    @staticmethod
+    def __splitFilename(filename):
+        basename = filename
+        extension = 'wav'
+        m = re.match('(.*)\.(.*)', filename)
+        if m:
+            basename = m.group(1)
+            extension = m.group(2).lower()
+
+        return basename, extension
 
     def recordToFile(self, path):
         "Records from the microphone and outputs the resulting data to 'path'"
-        sample_width, data = self.record()
+        sampleWidth, data = self.record()
         data = pack('<' + ('h' * len(data)), *data)
 
-        wave_file = wave.open(path, 'wb')
-        wave_file.setnchannels(self.channels)
-        wave_file.setsampwidth(sample_width)
-        wave_file.setframerate(self.rate)
-        wave_file.writeframes(data)
-        wave_file.close()
+        basename, extension = self.__splitFilename(path)
+        waveFileName = '%s.wav' % basename
+        waveFile = wave.open(waveFileName, 'wb')
+        waveFile.setnchannels(self.channels)
+        waveFile.setsampwidth(sampleWidth)
+        waveFile.setframerate(self.rate)
+        waveFile.writeframes(data)
+        waveFile.close()
+
+        if extension.lower() == 'flac':
+            audiotools.open(waveFileName).convert('%s.flac' % basename, audiotools.FlacAudio)
+            os.remove(waveFileName)
 
