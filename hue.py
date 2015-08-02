@@ -4,8 +4,6 @@ from logger import Logger
 from phue import Bridge
 
 class Hue():
-    __moduleName = 'hue'
-
     def __init__(self, bridge, lightbulb=None):
         self.bridgeAddress = bridge
         self.lightsMap = {}
@@ -18,7 +16,7 @@ class Hue():
         Logger.getLogger().info({
             'msgType': 'Hue bridge started',
             'bridge': self.bridgeAddress,
-            'module': self.__moduleName,
+            'module': self.__class__.__name__
             'lightbulbs': self.lightbulbs if lightbulb else None,
         })
 
@@ -28,7 +26,7 @@ class Hue():
 
         Logger.getLogger().info({
             'msgType': 'Connecting to the Hue bridge',
-            'module': self.__moduleName,
+            'module': self.__class__.__name__
         })
 
         self.bridge = Bridge(self.bridgeAddress)
@@ -37,7 +35,7 @@ class Hue():
 
         Logger.getLogger().info({
             'msgType': 'Connected to the Hue bridge',
-            'module': self.__moduleName,
+            'module': self.__class__.__name__
         })
 
         for light in self.bridge.lights:
@@ -56,7 +54,7 @@ class Hue():
     def setOn(self, on):
         Logger.getLogger().info({
             'msgType': 'Set lightbulbs on',
-            'module': self.__moduleName,
+            'module': self.__class__.__name__
             'on': on,
         })
 
@@ -68,7 +66,7 @@ class Hue():
     def setBri(self, bri):
         Logger.getLogger().info({
             'msgType': 'Set lightbulbs brightness',
-            'module': self.__moduleName,
+            'module': self.__class__.__name__
             'brightness': bri,
         })
 
@@ -85,7 +83,7 @@ class Hue():
     def setSat(self, sat):
         Logger.getLogger().info({
             'msgType': 'Set lightbulbs saturation',
-            'module': self.__moduleName,
+            'module': self.__class__.__name__
             'saturation': sat,
         })
 
@@ -94,7 +92,7 @@ class Hue():
     def setHue(self, hue):
         Logger.getLogger().info({
             'msgType': 'Set lightbulbs hue',
-            'module': self.__moduleName,
+            'module': self.__class__.__name__
             'saturation': hue,
         })
 

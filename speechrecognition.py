@@ -1,17 +1,18 @@
 from __future__ import print_function
+from logger import Logger
 
 import json
 import os
 import re
 import requests
 
-from sys import version_info
-PY3 = version_info[0] >= 3
-
-if PY3:
+try:
     from urllib.parse import urlencode
-else:
+except ImportError as e:
     from urllib import urlencode
+
+class SpeechRecognitionError(Exception):
+    pass
 
 class SpeechRecognition():
     """
@@ -25,7 +26,21 @@ class SpeechRecognition():
         self.apiKey = apiKey
         self.languages = languages
 
+        Logger.getLogger().info({
+            'msgType': 'Initializing speech recognition backend',
+            'module': self.__class__.__name__
+            'apiKey': '******',
+            'languages': languages,
+        })
+
     def recognizeSpeechFromFile(self, filename):
+        Logger.getLogger().info({
+            'msgType': 'Google Speech Recognition API request',
+            'module': self.__class__.__name__
+            'apiKey': '******',
+            'language': self.languages[0],
+        })
+
         r = requests.post( \
             'http://www.google.com/speech-api/v2/recognize?' + urlencode({
                 'lang': self.languages[0],
@@ -42,6 +57,12 @@ class SpeechRecognition():
         if not r.ok:
             raise Exception('Got an unexpected HTTP response %d from the server' % r.status_code)
 
+        Logger.getLogger().info({
+            'msgType': 'Google Speech Recognition API response',
+            'module': self.__class__.__name__
+            'response': r.text,
+        })
+
         response = []
         for line in re.split('\r?\n', r.text):
             if re.match('^\s*$', line):
@@ -49,13 +70,14 @@ class SpeechRecognition():
             response.append(json.loads(line))
 
         for item in response:
-            print(item)
             if 'result' in item and len(item['result']):
                 for _ in item['result']:
                     if 'final' in _:
                         if 'alternative' in _ and len(_['alternative']):
                             return _['alternative'][0]['transcript'], \
                                 _['alternative'][0]['confidence'] if 'confidence' in _['alternative'][0] else 1
+
+        raise SpeechRecognitionError('Speech not recognized')
 
 # vim:sw=4:ts=4:et:
 

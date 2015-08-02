@@ -14,8 +14,6 @@ class AudioSource():
     @author: Fabio "BlackLight" Manganiello <blacklight86@gmail.com>
     """
 
-    __moduleName = 'audiosource'
-
     # threshold = 500  # audio levels not normalised.
     threshold = 5000  # audio levels not normalised.
     chunkSize = 32768
@@ -49,7 +47,7 @@ class AudioSource():
 
         Logger.getLogger().info({
             'msgType': 'Initializing audio source',
-            'module': self.__moduleName,
+            'module': self.__class__.__name__
             'threshold': self.threshold,
             'chunkSize': self.chunkSize,
             'rate': self.rate,
@@ -95,7 +93,7 @@ class AudioSource():
 
         Logger.getLogger().info({
             'msgType': 'Audio recording started',
-            'module': self.__moduleName,
+            'module': self.__class__.__name__
         })
 
         while int(len(dataAll) / self.chunkSize) < self.maxChunks:
@@ -112,7 +110,7 @@ class AudioSource():
 
         Logger.getLogger().info({
             'msgType': 'Audio recording stopped',
-            'module': self.__moduleName,
+            'module': self.__class__.__name__
         })
 
         dataAll = self.__trim(dataAll)
@@ -146,7 +144,7 @@ class AudioSource():
 
         Logger.getLogger().debug({
             'msgType': 'Saved recorded audio to wave file',
-            'module': self.__moduleName,
+            'module': self.__class__.__name__
             'filename': waveFileName,
         })
 
@@ -157,7 +155,7 @@ class AudioSource():
 
             Logger.getLogger().debug({
                 'msgType': 'Saved recorded audio to flac file',
-                'module': self.__moduleName,
+                'module': self.__class__.__name__
                 'filename': waveFileName,
             })
 
