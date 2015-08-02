@@ -1,10 +1,7 @@
-#!/usr/bin/python2
-
 from array import array
 from struct import pack
 from sys import byteorder
 
-import audiotools
 import copy
 import os
 import re
@@ -13,10 +10,11 @@ import wave
 
 class AudioSource():
     # threshold = 500  # audio levels not normalised.
-    threshold = 4500  # audio levels not normalised.
+    threshold = 5000  # audio levels not normalised.
     chunkSize = 32768
     rate = 44100
-    silentChunks = 1 * rate / chunkSize  # about 2 sec
+    silentChunks = int(2 * rate / chunkSize) # about 2 sec
+    maxChunks = int(3 * rate / chunkSize) # 3 sec
     format = pyaudio.paInt16
     frameMaxValue = 2 ** 15 - 1
     normalizeMinusOneDb = 10 ** (-1.0 / 20)
@@ -76,27 +74,12 @@ class AudioSource():
         audioStarted = False
         dataAll = array('h')
 
-        while True:
+        while int(len(dataAll) / self.chunkSize) < self.maxChunks:
             # little endian, signed short
             dataChunk = array('h', stream.read(self.chunkSize))
             if byteorder == 'big':
                 dataChunk.byteswap()
             dataAll.extend(dataChunk)
-
-            silent = self.__isSilent(dataChunk)
-            print(silent)
-
-            if audioStarted:
-                if silent:
-                    silentChunks += 1
-                    if silentChunks > self.silentChunks:
-                        print("AUDIO STOPPED")
-                        break
-                elif silentChunks > self.silentChunksThreshold:
-                    silentChunks = 0
-            elif not silent:
-                print("AUDIO STARTED")
-                audioStarted = True
 
         sampleWidth = p.get_sample_size(self.format)
         stream.stop_stream()
@@ -133,6 +116,6 @@ class AudioSource():
         waveFile.close()
 
         if extension.lower() == 'flac':
-            audiotools.open(waveFileName).convert('%s.flac' % basename, audiotools.FlacAudio)
+            os.system('flac -f %s -o %s.flac' % (waveFileName, basename))
             os.remove(waveFileName)
 
