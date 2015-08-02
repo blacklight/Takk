@@ -1,18 +1,27 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+
 from audiosource import AudioSource
-from speechrecognition import SpeechRecognition
+from speechrecognition import SpeechRecognition, SpeechRecognitionError
 from hue import Hue
 from config import Config
+from logger import Logger
 
 import os
 import re
 
 def main():
     config = Config()
+    log = Logger.createStaticLogger(logfile=os.path.expanduser(config.get('log.logfile')))
+    log.info({
+        'msgType': 'Application started',
+        'module': __name__,
+        'config': config.dump(),
+    })
 
     hue = Hue(bridge=config.get('hue.bridge'))
+
     source = AudioSource(
         audioFile=config.get('audio.audio_file'),
         threshold=config.get('audio.threshold'),
@@ -25,7 +34,16 @@ def main():
     )
 
     source.recordToFile()
-    text, confidence = speech.recognizeSpeechFromFile(filename=config.get('audio.audio_file'))
+
+    try:
+        text, confidence = speech.recognizeSpeechFromFile(filename=config.get('audio.audio_file'))
+    except SpeechRecognitionError as e:
+        log.warning({
+            'msgType': 'Speech not recognized',
+            'module': __name__,
+        })
+
+        raise e
 
     if re.search('play', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE):
         os.system('mpc play')
@@ -46,5 +64,15 @@ def main():
         hue.setOn(False)
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except BaseException as e:
+        Logger().error({
+            'msgType'   : 'Uncaught exception, exiting',
+            'exception' : str(e),
+        })
+
+        raise e
+
+# vim:sw=4:ts=4:et:
 
