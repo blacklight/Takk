@@ -9,12 +9,6 @@ from config import Config
 import os
 import re
 
-config = {
-    'audiofile': 'audio.flac',
-    'huebridge': 'hue',
-    'lang': 'en-us',
-}
-
 def main():
     config = Config()
 
