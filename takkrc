@@ -16,3 +16,6 @@ bridge = hue
 [log]
 logfile = ~/.takk/takk.log
 
+# Available options: DEBUG, INFO, WARNING, ERROR
+loglevel = DEBUG
+

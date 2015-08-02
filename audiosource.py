@@ -47,7 +47,7 @@ class AudioSource():
 
         Logger.getLogger().info({
             'msgType': 'Initializing audio source',
-            'module': self.__class__.__name__
+            'module': self.__class__.__name__,
             'threshold': self.threshold,
             'chunkSize': self.chunkSize,
             'rate': self.rate,
@@ -144,7 +144,7 @@ class AudioSource():
 
         Logger.getLogger().debug({
             'msgType': 'Saved recorded audio to wave file',
-            'module': self.__class__.__name__
+            'module': self.__class__.__name__,
             'filename': waveFileName,
         })
 
@@ -155,7 +155,7 @@ class AudioSource():
 
             Logger.getLogger().debug({
                 'msgType': 'Saved recorded audio to flac file',
-                'module': self.__class__.__name__
+                'module': self.__class__.__name__,
                 'filename': waveFileName,
             })
 

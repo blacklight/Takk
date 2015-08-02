@@ -28,7 +28,7 @@ class SpeechRecognition():
 
         Logger.getLogger().info({
             'msgType': 'Initializing speech recognition backend',
-            'module': self.__class__.__name__
+            'module': self.__class__.__name__,
             'apiKey': '******',
             'languages': languages,
         })
@@ -36,7 +36,7 @@ class SpeechRecognition():
     def recognizeSpeechFromFile(self, filename):
         Logger.getLogger().info({
             'msgType': 'Google Speech Recognition API request',
-            'module': self.__class__.__name__
+            'module': self.__class__.__name__,
             'apiKey': '******',
             'language': self.languages[0],
         })
@@ -59,7 +59,7 @@ class SpeechRecognition():
 
         Logger.getLogger().info({
             'msgType': 'Google Speech Recognition API response',
-            'module': self.__class__.__name__
+            'module': self.__class__.__name__,
             'response': r.text,
         })
 

@@ -11,61 +11,74 @@ from logger import Logger
 import os
 import re
 
-def main():
-    config = Config()
-    log = Logger.createStaticLogger(logfile=os.path.expanduser(config.get('log.logfile')))
-    log.info({
-        'msgType': 'Application started',
-        'module': __name__,
-        'config': config.dump(),
-    })
+class App():
+    def __initLogging(self):
+        self.log = Logger.createStaticLogger(
+            logfile=os.path.expanduser(self.config.get('log.logfile')),
+            loglevel=self.config.get('log.loglevel'),
+        )
 
-    hue = Hue(bridge=config.get('hue.bridge'))
-
-    source = AudioSource(
-        audioFile=config.get('audio.audio_file'),
-        threshold=config.get('audio.threshold'),
-        chunkSize=config.get('audio.chunk_size'),
-        rate=config.get('audio.rate'))
-
-    speech = SpeechRecognition(
-        apiKey=config.get('speech.google_speech_api_key'),
-        languages=config.get('speech.language').split(',')
-    )
-
-    source.recordToFile()
-
-    try:
-        text, confidence = speech.recognizeSpeechFromFile(filename=config.get('audio.audio_file'))
-    except SpeechRecognitionError as e:
-        log.warning({
-            'msgType': 'Speech not recognized',
-            'module': __name__,
+        self.log.info({
+            'msgType': 'Application started',
+            'module': self.__class__.__name__,
+            'config': self.config.dump(),
         })
 
-        raise e
+    def __initAudioSource(self):
+        self.audio = AudioSource(
+            audioFile=self.config.get('audio.audio_file'),
+            threshold=self.config.get('audio.threshold'),
+            chunkSize=self.config.get('audio.chunk_size'),
+            rate=self.config.get('audio.rate'))
 
-    if re.search('play', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE):
-        os.system('mpc play')
+    def __initSpeechRecognition(self):
+        self.speech = SpeechRecognition(
+            apiKey=self.config.get('speech.google_speech_api_key'),
+            languages=self.config.get('speech.language').split(',')
+        )
 
-    if re.search('stop', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE):
-        os.system('mpc pause')
+    def __init__(self):
+        self.config = Config()
+        self.__initLogging()
 
-    if (re.search('lights', text.lower(), re.IGNORECASE) and re.search('on', text.lower(), re.IGNORECASE) \
-          or \
-        re.search('luci', text.lower(), re.IGNORECASE) and re.search('accend', text.lower(), re.IGNORECASE)):
-        hue.connect()
-        hue.setOn(True)
+        self.__initAudioSource()
+        self.audio.recordToFile()
 
-    if (re.search('lights', text.lower(), re.IGNORECASE) and re.search('off', text.lower(), re.IGNORECASE) \
-          or \
-        re.search('luci', text.lower(), re.IGNORECASE) and re.search('spegn', text.lower(), re.IGNORECASE)):
-        hue.connect()
-        hue.setOn(False)
+        self.__initSpeechRecognition()
+
+        try:
+            text, confidence = self.speech.recognizeSpeechFromFile(filename=self.config.get('audio.audio_file'))
+        except SpeechRecognitionError as e:
+            self.log.warning({
+                'msgType': 'Speech not recognized',
+                'module': self.__class__.__name__,
+            })
+
+            raise e
+
+        hue = Hue(bridge=self.config.get('hue.bridge'))
+
+        if re.search('play', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE):
+            os.system('mpc play')
+
+        if re.search('stop', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE):
+            os.system('mpc pause')
+
+        if (re.search('lights', text.lower(), re.IGNORECASE) and re.search('on', text.lower(), re.IGNORECASE) \
+              or \
+            re.search('luci', text.lower(), re.IGNORECASE) and re.search('accend', text.lower(), re.IGNORECASE)):
+            hue.connect()
+            hue.setOn(True)
+
+        if (re.search('lights', text.lower(), re.IGNORECASE) and re.search('off', text.lower(), re.IGNORECASE) \
+              or \
+            re.search('luci', text.lower(), re.IGNORECASE) and re.search('spegn', text.lower(), re.IGNORECASE)):
+            hue.connect()
+            hue.setOn(False)
 
 if __name__ == '__main__':
     try:
-        main()
+        App()
     except BaseException as e:
         Logger().error({
             'msgType'   : 'Uncaught exception, exiting',

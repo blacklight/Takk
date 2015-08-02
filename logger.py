@@ -10,15 +10,15 @@ class Logger():
     __logger = None
 
     @classmethod
-    def createStaticLogger(cls, logfile=None):
-        cls.__logger = Logger(logfile)
+    def createStaticLogger(cls, logfile=None, loglevel='INFO'):
+        cls.__logger = Logger(logfile=logfile, loglevel=loglevel)
         return cls.__logger
 
     @classmethod
     def getLogger(cls):
         return cls.__logger
 
-    def __init__(self, logfile=None):
+    def __init__(self, logfile=None, loglevel='INFO'):
         if logfile is not None:
             self.logfile = logfile
         else:
@@ -27,9 +27,20 @@ class Logger():
                 os.mkdir(basedir)
             self.logfile = '%s/takk.log' % basedir
 
+        if loglevel and loglevel.lower() == 'debug':
+            self.loglevel = logging.DEBUG
+        elif loglevel and loglevel.lower() == 'info':
+            self.loglevel = logging.INFO
+        elif loglevel and loglevel.lower() == 'warning':
+            self.loglevel = logging.WARNING
+        elif loglevel and loglevel.lower() == 'error':
+            self.loglevel = logging.ERROR
+        # else:
+        #     self.loglevel = logging.INFO
+
         logging.basicConfig(
             filename = self.logfile,
-            level = logging.DEBUG,
+            level = self.loglevel,
             format = '[%(asctime)-15s] %(message)s'
         )
 
