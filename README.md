@@ -15,8 +15,7 @@ Takk is more or less a Python and Unix-friendly version of Google Now, Siri or C
 ## Installation
 
 1. `git clone https://github.com/BlackLight/Takk`
-2. Copy `takkrc` to `~/.takkrc`
-3. Modify `~/.takkrc` to include your Google Speech Recognition API secret key. Instructions on how to get one: http://www.chromium.org/developers/how-tos/api-keys
-4. Modify `~/.takkrc` following the available samples to configure vocal commands and actions the way you prefer
+2. Modify `./takkrc` to include your Google Speech Recognition API secret key. Instructions on how to get one: http://www.chromium.org/developers/how-tos/api-keys
+4. Customize `./takkrc` according to the provided in-file documentation
 5. `./takk.py`
 
