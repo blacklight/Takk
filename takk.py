@@ -50,6 +50,7 @@ class App():
             text, confidence = self.speech.recognizeSpeechFromFile(filename=self.config.get('audio.audio_file'))
             os.remove(self.config.get('audio.audio_file'))
         except SpeechRecognitionError as e:
+            # TODO Properly manage the raised exception with a retry mechanism, see #13
             self.log.warning({
                 'msgType': 'Speech not recognized',
                 'module': self.__class__.__name__,
