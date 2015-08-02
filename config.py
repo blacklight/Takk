@@ -1,9 +1,9 @@
 from __future__ import print_function
 
 try:
-    from configparser import ConfigParser
+    from configparser import SafeConfigParser
 except ImportError as e:
-    from ConfigParser import ConfigParser
+    from ConfigParser import SafeConfigParser
 
 import json
 import os
@@ -29,7 +29,7 @@ class Config():
         else:
             self.rcfile = rcfile
 
-        self.parser = ConfigParser()
+        self.parser = SafeConfigParser()
         self.config = {}
 
         try:
