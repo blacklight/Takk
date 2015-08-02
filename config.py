@@ -5,6 +5,7 @@ try:
 except ImportError as e:
     from ConfigParser import ConfigParser
 
+import json
 import os
 import re
 import sys
@@ -44,6 +45,9 @@ class Config():
 
     def get(self, attr):
         return self.config[attr]
+
+    def dump(self):
+        return json.dumps(self.config)
 
 # vim:sw=4:ts=4:et:
 

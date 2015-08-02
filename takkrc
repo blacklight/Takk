@@ -13,3 +13,6 @@ rate = 44100
 [hue]
 bridge = hue
 
+[log]
+logfile = ~/.takk/takk.log
+

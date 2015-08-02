@@ -1,6 +1,7 @@
 from array import array
 from struct import pack
 from sys import byteorder
+from logger import Logger
 
 import copy
 import os
@@ -12,6 +13,8 @@ class AudioSource():
     """
     @author: Fabio "BlackLight" Manganiello <blacklight86@gmail.com>
     """
+
+    __moduleName = 'audiosource'
 
     # threshold = 500  # audio levels not normalised.
     threshold = 5000  # audio levels not normalised.
@@ -41,13 +44,18 @@ class AudioSource():
         self.format = __class__.format
         self.frameMaxValue = __class__.frameMaxValue
         self.normalizeMinusOneDb = __class__.normalizeMinusOneDb
-        self.rate = __class__.rate
         self.channels = __class__.channels
         self.trimAppend = __class__.trimAppend
 
-    def __isSilent(self, dataChunk):
-        """Returns 'True' if below the 'silent' threshold"""
-        return max(dataChunk) < self.threshold
+        Logger.getLogger().info({
+            'msgType': 'Initializing audio source',
+            'module': self.__moduleName,
+            'threshold': self.threshold,
+            'chunkSize': self.chunkSize,
+            'rate': self.rate,
+            'channels': self.channels,
+            'frameMaxValue': self.frameMaxValue,
+        })
 
     def __normalize(self, dataAll):
         """Amplify the volume out to max -1dB"""
@@ -85,6 +93,11 @@ class AudioSource():
         audioStarted = False
         dataAll = array('h')
 
+        Logger.getLogger().info({
+            'msgType': 'Audio recording started',
+            'module': self.__moduleName,
+        })
+
         while int(len(dataAll) / self.chunkSize) < self.maxChunks:
             # little endian, signed short
             dataChunk = array('h', stream.read(self.chunkSize))
@@ -97,7 +110,12 @@ class AudioSource():
         stream.close()
         p.terminate()
 
-        dataAll = self.__trim(dataAll)  # we trim before normalize as threshhold applies to un-normalized wave (as well as isSilent() function)
+        Logger.getLogger().info({
+            'msgType': 'Audio recording stopped',
+            'module': self.__moduleName,
+        })
+
+        dataAll = self.__trim(dataAll)
         dataAll = self.__normalize(dataAll)
         return sampleWidth, dataAll
 
@@ -126,7 +144,22 @@ class AudioSource():
         waveFile.writeframes(data)
         waveFile.close()
 
+        Logger.getLogger().debug({
+            'msgType': 'Saved recorded audio to wave file',
+            'module': self.__moduleName,
+            'filename': waveFileName,
+        })
+
         if extension.lower() == 'flac':
-            os.system('flac -f %s -o %s.flac' % (waveFileName, basename))
+            flacFileName = '%s.flac' % basename
+            os.system('flac -f %s -o %s > /dev/null 2>&1' % (waveFileName, flacFileName))
             os.remove(waveFileName)
+
+            Logger.getLogger().debug({
+                'msgType': 'Saved recorded audio to flac file',
+                'module': self.__moduleName,
+                'filename': waveFileName,
+            })
+
+# vim:sw=4:ts=4:et:
 
