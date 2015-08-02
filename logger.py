@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 
 class Logger():
     """
@@ -22,10 +21,7 @@ class Logger():
         if logfile is not None:
             self.logfile = logfile
         else:
-            basedir = os.getenv('HOME') + '/.takk'
-            if not os.path.isdir(basedir):
-                os.mkdir(basedir)
-            self.logfile = '%s/takk.log' % basedir
+            self.logfile = 'takk.log'
 
         if loglevel and loglevel.lower() == 'debug':
             self.loglevel = logging.DEBUG
@@ -35,8 +31,8 @@ class Logger():
             self.loglevel = logging.WARNING
         elif loglevel and loglevel.lower() == 'error':
             self.loglevel = logging.ERROR
-        # else:
-        #     self.loglevel = logging.INFO
+        else:
+            self.loglevel = logging.INFO
 
         logging.basicConfig(
             filename = self.logfile,

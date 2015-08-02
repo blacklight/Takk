@@ -19,9 +19,9 @@ class SpeechRecognition():
     @author: Fabio "BlackLight" Manganiello <blacklight86@gmail.com>
     """
 
-    def __init__(self, apiKey, languages=['en-us']):
+    def __init__(self, apiKey=None, languages=['en-us']):
         if not apiKey:
-            raise Exception('No Google speech recognition API key found in your configuration')
+            raise Exception('No Google speech recognition API key found in your configuration or GOOGLE_SPEECH_API_KEY environment variable')
 
         self.apiKey = apiKey
         self.languages = languages

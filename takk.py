@@ -48,6 +48,7 @@ class App():
 
         try:
             text, confidence = self.speech.recognizeSpeechFromFile(filename=self.config.get('audio.audio_file'))
+            os.remove(self.config.get('audio.audio_file'))
         except SpeechRecognitionError as e:
             self.log.warning({
                 'msgType': 'Speech not recognized',

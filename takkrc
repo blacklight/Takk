@@ -1,11 +1,11 @@
 [speech]
-# Put your Google Speech API secret key here
+# Put your Google Speech Recognition API secret key here or in an environment variable named GOOGLE_SPEECH_API_KEY
 # Instructions on how to get your key: http://www.chromium.org/developers/how-tos/api-keys
 # google_speech_api_key = Your Google Speech API secret key
 language = en-us,it-it
 
 [audio]
-audio_file = /tmp/audio.flac
+audio_file = audio.flac
 threshold = 4000
 chunk_size = 32768
 rate = 44100
@@ -14,8 +14,12 @@ rate = 44100
 bridge = hue
 
 [log]
-logfile = ~/.takk/takk.log
+logfile = takk.log
 
 # Available options: DEBUG, INFO, WARNING, ERROR
 loglevel = DEBUG
+
+[plugin]
+
+[speech_engine]
 
