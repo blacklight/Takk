@@ -42,6 +42,7 @@ class Config():
                 self.config[key] = value
 
     def get(self, attr):
+        attr = attr.lower()
         if attr == 'speech.google_speech_api_key':
             return self.config[attr] if attr in self.config else os.getenv('GOOGLE_SPEECH_API_KEY')
         return self.config[attr] if attr in self.config else None
