@@ -1,0 +1,15 @@
+[speech]
+# Put your Google Speech API secret key here
+# Instructions on how to get your key: http://www.chromium.org/developers/how-tos/api-keys
+# google_speech_api_key = Your Google Speech API secret key
+language = en-us,it-it
+
+[audio]
+audio_file = /tmp/audio.flac
+threshold = 4000
+chunk_size = 32768
+rate = 44100
+
+[hue]
+bridge = hue
+

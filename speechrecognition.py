@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import json
 import os
 import re
@@ -12,16 +14,22 @@ else:
     from urllib import urlencode
 
 class SpeechRecognition():
-    apiKey = 'AIzaSyB_Gv4eluclBegc7OdRB4pk5LYPfuQCTBo'
+    """
+    @author: Fabio "BlackLight" Manganiello <blacklight86@gmail.com>
+    """
 
-    def __init__(self):
-        pass
+    def __init__(self, apiKey, languages=['en-us']):
+        if not apiKey:
+            raise Exception('No Google speech recognition API key found in your configuration')
 
-    def recognizeSpeechFromFile(self, filename, language='en-us'):
+        self.apiKey = apiKey
+        self.languages = languages
+
+    def recognizeSpeechFromFile(self, filename):
         r = requests.post( \
             'http://www.google.com/speech-api/v2/recognize?' + urlencode({
-                'lang': language,
-                'key': __class__.apiKey,
+                'lang': self.languages[0],
+                'key': self.apiKey,
                 'output': 'json',
             }),
 
@@ -48,4 +56,6 @@ class SpeechRecognition():
                         if 'alternative' in _ and len(_['alternative']):
                             return _['alternative'][0]['transcript'], \
                                 _['alternative'][0]['confidence'] if 'confidence' in _['alternative'][0] else 1
+
+# vim:sw=4:ts=4:et:
 

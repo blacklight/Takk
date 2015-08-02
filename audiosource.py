@@ -9,23 +9,35 @@ import pyaudio
 import wave
 
 class AudioSource():
+    """
+    @author: Fabio "BlackLight" Manganiello <blacklight86@gmail.com>
+    """
+
     # threshold = 500  # audio levels not normalised.
     threshold = 5000  # audio levels not normalised.
     chunkSize = 32768
     rate = 44100
-    silentChunks = int(2 * rate / chunkSize) # about 2 sec
     maxChunks = int(3 * rate / chunkSize) # 3 sec
     format = pyaudio.paInt16
     frameMaxValue = 2 ** 15 - 1
     normalizeMinusOneDb = 10 ** (-1.0 / 20)
     channels = 1
     trimAppend = rate / 4
-    silentChunksThreshold = 10
 
-    def init(self, threshold=None, chunkSize=None, silentSeconds=3):
-        self.threshold = threshold if threshold is not None else __class__.threshold
-        self.chunkSize = chunkSize if chunkSize is not None else __class__.chunkSize
-        self.silentSeconds = silentSeconds if silentSeconds is not None else __class__.silentSeconds
+    def __init__(self,
+             audioFile=None,
+             threshold=None,
+             chunkSize=None,
+             rate=None):
+        if audioFile is not None:
+            self.audioFile = audioFile
+        else:
+            raise Exception('No audio.audio_file item specified in your configuration')
+
+        self.threshold = int(threshold) if threshold is not None else __class__.threshold
+        self.chunkSize = int(chunkSize) if chunkSize is not None else __class__.chunkSize
+        self.rate = int(rate) if rate is not None else __class__.rate
+        self.maxChunks = int(3 * self.rate / self.chunkSize)
         self.format = __class__.format
         self.frameMaxValue = __class__.frameMaxValue
         self.normalizeMinusOneDb = __class__.normalizeMinusOneDb
@@ -70,7 +82,6 @@ class AudioSource():
         p = pyaudio.PyAudio()
         stream = p.open(format=self.format, channels=self.channels, rate=self.rate, input=True, output=True, frames_per_buffer=self.chunkSize)
 
-        silentChunks = 0
         audioStarted = False
         dataAll = array('h')
 
@@ -101,12 +112,12 @@ class AudioSource():
 
         return basename, extension
 
-    def recordToFile(self, path):
-        "Records from the microphone and outputs the resulting data to 'path'"
+    def recordToFile(self):
+        "Records from the microphone and outputs the resulting data to the file"
         sampleWidth, data = self.record()
         data = pack('<' + ('h' * len(data)), *data)
 
-        basename, extension = self.__splitFilename(path)
+        basename, extension = self.__splitFilename(self.audioFile)
         waveFileName = '%s.wav' % basename
         waveFile = wave.open(waveFileName, 'wb')
         waveFile.setnchannels(self.channels)

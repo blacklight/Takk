@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 from audiosource import AudioSource
 from speechrecognition import SpeechRecognition
 from hue import Hue
+from config import Config
 
 import os
 import re
@@ -14,11 +16,22 @@ config = {
 }
 
 def main():
-    global config
+    config = Config()
 
-    hue = Hue(config['huebridge'])
-    AudioSource().recordToFile(config['audiofile'])
-    text, confidence = SpeechRecognition().recognizeSpeechFromFile(filename=config['audiofile'], language=config['lang'])
+    hue = Hue(bridge=config.get('hue.bridge'))
+    source = AudioSource(
+        audioFile=config.get('audio.audio_file'),
+        threshold=config.get('audio.threshold'),
+        chunkSize=config.get('audio.chunk_size'),
+        rate=config.get('audio.rate'))
+
+    speech = SpeechRecognition(
+        apiKey=config.get('speech.google_speech_api_key'),
+        languages=config.get('speech.language').split(',')
+    )
+
+    source.recordToFile()
+    text, confidence = speech.recognizeSpeechFromFile(filename=config.get('audio.audio_file'))
 
     if re.search('play', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE):
         os.system('mpc play')
