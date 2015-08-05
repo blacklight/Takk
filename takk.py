@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+import os, re, sys, inspect
+
+# From http://stackoverflow.com/questions/279237/import-a-module-from-a-relative-path
+cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])) + '/../../lib'
+if cmd_folder not in sys.path:
+    sys.path.insert(0, cmd_folder)
 
 from audiosource import AudioSource
 from speechrecognition import SpeechRecognition, SpeechRecognitionError
 from hue import Hue
 from config import Config
 from logger import Logger
-
-import os
-import re
 
 class App():
     def __initLogging(self):
