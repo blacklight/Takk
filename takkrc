@@ -5,7 +5,7 @@
 language = en-us,it-it
 
 [audio]
-audio_file = audio.flac
+audio_file = __TMPDIR__/audio.flac
 threshold = 4000
 chunk_size = 32768
 rate = 44100

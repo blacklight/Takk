@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from __armando__ import Armando
 import os, re, sys, inspect
 
-# From http://stackoverflow.com/questions/279237/import-a-module-from-a-relative-path
-cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])) + '/../../lib'
-if cmd_folder not in sys.path:
-    sys.path.insert(0, cmd_folder)
+###
+Armando.initialize()
+###
 
 from audiosource import AudioSource
 from speechrecognition import SpeechRecognition, SpeechRecognitionError
@@ -15,47 +15,47 @@ from config import Config
 from logger import Logger
 
 class App():
-    def __initLogging(self):
-        self.log = Logger.createStaticLogger(
+    def __init_logging(self):
+        self.log = Logger.create_static_logger(
             logfile=os.path.expanduser(self.config.get('log.logfile')),
             loglevel=self.config.get('log.loglevel'),
         )
 
         self.log.info({
-            'msgType': 'Application started',
+            'msg_type': 'Application started',
             'module': self.__class__.__name__,
             'config': self.config.dump(),
         })
 
-    def __initAudioSource(self):
-        self.audio = AudioSource(
-            audioFile=self.config.get('audio.audio_file'),
+    def __get_audio_source(self):
+        return AudioSource(
+            audio_file=self.config.get('audio.audio_file'),
             threshold=self.config.get('audio.threshold'),
-            chunkSize=self.config.get('audio.chunk_size'),
+            chunk_size=self.config.get('audio.chunk_size'),
             rate=self.config.get('audio.rate'))
 
-    def __initSpeechRecognition(self):
-        self.speech = SpeechRecognition(
-            apiKey=self.config.get('speech.google_speech_api_key'),
+    def __get_speech_recognition(self):
+        return SpeechRecognition(
+            api_key=self.config.get('speech.google_speech_api_key'),
             languages=self.config.get('speech.language').split(',')
         )
 
     def __init__(self):
         self.config = Config()
-        self.__initLogging()
+        self.__init_logging()
 
-        self.__initAudioSource()
-        self.audio.recordToFile()
+        self.audio = self.__get_audio_source()
+        self.audio.record_to_file()
 
-        self.__initSpeechRecognition()
+        self.speech = self.__get_speech_recognition()
 
         try:
-            text, confidence = self.speech.recognizeSpeechFromFile(filename=self.config.get('audio.audio_file'))
+            text, confidence = self.speech.recognize_speech_from_file(filename=self.config.get('audio.audio_file'))
             os.remove(self.config.get('audio.audio_file'))
         except SpeechRecognitionError as e:
             # TODO Properly manage the raised exception with a retry mechanism, see #13
             self.log.warning({
-                'msgType': 'Speech not recognized',
+                'msg_type': 'Speech not recognized',
                 'module': self.__class__.__name__,
             })
 
@@ -73,20 +73,20 @@ class App():
               or \
             re.search('luci', text.lower(), re.IGNORECASE) and re.search('accend', text.lower(), re.IGNORECASE)):
             hue.connect()
-            hue.setOn(True)
+            hue.set_on(True)
 
         if (re.search('lights', text.lower(), re.IGNORECASE) and re.search('off', text.lower(), re.IGNORECASE) \
               or \
             re.search('luci', text.lower(), re.IGNORECASE) and re.search('spegn', text.lower(), re.IGNORECASE)):
             hue.connect()
-            hue.setOn(False)
+            hue.set_on(False)
 
 if __name__ == '__main__':
     try:
         App()
     except BaseException as e:
         Logger().error({
-            'msgType'   : 'Uncaught exception, exiting',
+            'msg_type'   : 'Uncaught exception, exiting',
             'exception' : str(e),
         })
 
