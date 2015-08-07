@@ -17,8 +17,8 @@ from logger import Logger
 class App():
     def __init_logging(self):
         self.log = Logger.create_static_logger(
-            logfile=os.path.expanduser(self.config.get('log.logfile')),
-            loglevel=self.config.get('log.loglevel'),
+            logfile=os.path.expanduser(self.config.get('logger.logfile')),
+            loglevel=self.config.get('logger.loglevel'),
         )
 
         self.log.info({
