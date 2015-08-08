@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 from __future__ import print_function
 from __armando__ import Armando
-import os, re, sys, inspect
+import os, re, sys, inspect, traceback
 
 ###
 Armando.initialize()
@@ -84,10 +84,11 @@ class App():
 if __name__ == '__main__':
     try:
         App()
-    except BaseException as e:
+    except Exception as e:
+        tb = traceback.format_exc()
         Logger().error({
             'msg_type'   : 'Uncaught exception, exiting',
-            'exception' : str(e),
+            'exception' : tb,
         })
 
         raise e
