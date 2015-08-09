@@ -14,54 +14,32 @@ from hue import Hue
 from config import Config
 from logger import Logger
 
-class App():
-    def __init_logging(self):
-        self.log = Logger.create_static_logger(
-            logfile=os.path.expanduser(self.config.get('logger.logfile')),
-            loglevel=self.config.get('logger.loglevel'),
-        )
-
-        self.log.info({
-            'msg_type': 'Application started',
-            'module': self.__class__.__name__,
-            'config': self.config.dump(),
-        })
-
-    def __get_audio_source(self):
-        return AudioSource(
-            audio_file=self.config.get('audio.audio_file'),
-            threshold=self.config.get('audio.threshold'),
-            chunk_size=self.config.get('audio.chunk_size'),
-            rate=self.config.get('audio.rate'))
-
-    def __get_speech_recognition(self):
-        return SpeechRecognition(
-            api_key=self.config.get('speech.google_speech_api_key'),
-            languages=self.config.get('speech.language').split(',')
-        )
+class Takk():
+    __config = Config.get_config()
+    __logger = Logger.get_logger(__name__)
 
     def __init__(self):
-        self.config = Config()
-        self.__init_logging()
+        Takk.__logger.info({
+            'msg_type': 'Application started',
+            'config': Takk.__config.dump(),
+        })
 
-        self.audio = self.__get_audio_source()
-        self.audio.record_to_file()
+        self.audio = AudioSource()
+        self.audio.record_to_flac()
 
-        self.speech = self.__get_speech_recognition()
+        self.speech = SpeechRecognition()
 
         try:
-            text, confidence = self.speech.recognize_speech_from_file(filename=self.config.get('audio.audio_file'))
-            os.remove(self.config.get('audio.audio_file'))
+            text, confidence = self.speech.recognize_speech_from_file()
         except SpeechRecognitionError as e:
             # TODO Properly manage the raised exception with a retry mechanism, see #13
-            self.log.warning({
+            Takk.__logger.warning({
                 'msg_type': 'Speech not recognized',
-                'module': self.__class__.__name__,
             })
 
             raise e
 
-        hue = Hue(bridge=self.config.get('hue.bridge'))
+        self.hue = Hue()
 
         if re.search('play', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE):
             os.system('mpc play')
@@ -72,18 +50,18 @@ class App():
         if (re.search('lights', text.lower(), re.IGNORECASE) and re.search('on', text.lower(), re.IGNORECASE) \
               or \
             re.search('luci', text.lower(), re.IGNORECASE) and re.search('accend', text.lower(), re.IGNORECASE)):
-            hue.connect()
-            hue.set_on(True)
+            self.hue.connect()
+            self.hue.set_on(True)
 
         if (re.search('lights', text.lower(), re.IGNORECASE) and re.search('off', text.lower(), re.IGNORECASE) \
               or \
             re.search('luci', text.lower(), re.IGNORECASE) and re.search('spegn', text.lower(), re.IGNORECASE)):
-            hue.connect()
-            hue.set_on(False)
+            self.hue.connect()
+            self.hue.set_on(False)
 
 if __name__ == '__main__':
     try:
-        App()
+        Takk()
     except Exception as e:
         tb = traceback.format_exc()
         Logger().error({
