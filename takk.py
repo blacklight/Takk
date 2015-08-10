@@ -11,6 +11,7 @@ Armando.initialize()
 from audiosource import AudioSource
 from speechrecognition import SpeechRecognition, SpeechRecognitionError
 from hue import Hue
+from mpd import MPD
 from config import Config
 from logger import Logger
 
@@ -39,23 +40,25 @@ class Takk():
 
             raise e
 
-        self.hue = Hue()
-
         if re.search('play', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE):
-            os.system('mpc play')
+            self.mpd = MPD()
+            self.mpd.server_cmd('play')
 
         if re.search('stop', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE):
-            os.system('mpc pause')
+            self.mpd = MPD()
+            self.mpd.server_cmd('pause')
 
         if (re.search('lights', text.lower(), re.IGNORECASE) and re.search('on', text.lower(), re.IGNORECASE) \
-              or \
-            re.search('luci', text.lower(), re.IGNORECASE) and re.search('accend', text.lower(), re.IGNORECASE)):
+                or \
+                re.search('luci', text.lower(), re.IGNORECASE) and re.search('accend', text.lower(), re.IGNORECASE)):
+            self.hue = Hue()
             self.hue.connect()
             self.hue.set_on(True)
 
         if (re.search('lights', text.lower(), re.IGNORECASE) and re.search('off', text.lower(), re.IGNORECASE) \
-              or \
-            re.search('luci', text.lower(), re.IGNORECASE) and re.search('spegn', text.lower(), re.IGNORECASE)):
+                or \
+                re.search('luci', text.lower(), re.IGNORECASE) and re.search('spegn', text.lower(), re.IGNORECASE)):
+            self.hue = Hue()
             self.hue.connect()
             self.hue.set_on(False)
 
