@@ -40,11 +40,15 @@ class Takk():
 
             raise e
 
-        if re.search('play', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE):
+        if (re.search('play', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE) \
+                or \
+                re.search('musica', text.lower(), re.IGNORECASE) and re.search('avvia', text.lower(), re.IGNORECASE)):
             self.mpd = MPD()
             self.mpd.server_cmd('play')
 
-        if re.search('stop', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE):
+        if (re.search('stop', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE) \
+                or \
+                re.search('musica', text.lower(), re.IGNORECASE) and re.search('spegni', text.lower(), re.IGNORECASE)):
             self.mpd = MPD()
             self.mpd.server_cmd('pause')
 
