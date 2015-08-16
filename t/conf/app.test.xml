@@ -1,0 +1,42 @@
+<app>
+	<patterns>
+		<pattern id="play-music">
+			<match><![CDATA[
+				play\s*.*music\s*(artist {artist[regex-index=2]}\s*)?(album {album[regex-index=4]}\s*)?(title {title[regex-index=6]}\s*)?
+			]]></match>
+		</pattern>
+
+		<pattern id="pause-music">
+			<match><![CDATA[
+				stop\s*.*music
+			]]></match>
+		</pattern>
+	</patterns>
+
+	<actions>
+		<action id="mpd-play" type="python"><![CDATA[
+			from MPD import mpd
+			MPD().server_cmd('play')
+		]]></action>
+
+		<action id="mpd-pause" type="python"><![CDATA[
+			from MPD import mpd
+			MPD().server_cmd('pause')
+		]]></action>
+	</actions>
+
+	<rules>
+		<rule id="mpd-play-on-play-music">
+			<on pattern-id="play-music">
+				<then action-id="mpd-play"/>
+			</on>
+		</rule>
+
+		<rule id="mpd-pause-on-pause-music">
+			<on pattern-id="pause-music">
+				<then action-id="mpd-pause"/>
+			</on>
+		</rule>
+	</rules>
+</app>
+
