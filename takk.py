@@ -20,9 +20,9 @@ class Takk():
     __logger = Logger.get_logger(__name__)
 
     def __init__(self):
-        Takk.__logger.info({
+        self.__logger.info({
             'msg_type': 'Application started',
-            'config': Takk.__config.dump(),
+            'config': self.__config.dump(),
         })
 
         self.audio = AudioSource()
@@ -34,7 +34,7 @@ class Takk():
             text, confidence = self.speech.recognize_speech_from_file()
         except SpeechRecognitionError as e:
             # TODO Properly manage the raised exception with a retry mechanism, see #13
-            Takk.__logger.warning({
+            self.__logger.warning({
                 'msg_type': 'Speech not recognized',
             })
 
