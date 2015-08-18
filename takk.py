@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 from __armando__ import Armando
-import os, re, sys, inspect, traceback
+import json, os, re, sys, inspect, traceback
 
 ###
 Armando.initialize()
@@ -47,9 +47,9 @@ class Takk():
             })
 
         rules = Rules(self.__takk_basedir + os.sep + 'rules.xml')
-        pattern_id, attributes = rules.pattern_match(text.strip())
+        patterns = rules.pattern_match(text.strip())
 
-        if pattern_id is None:
+        if len(patterns) == 0:
             self.__logger.info({
                 'msg_type': 'No pattern matched',
                 'text': text,
@@ -58,8 +58,7 @@ class Takk():
             self.__logger.info({
                 'msg_type': 'Pattern matched',
                 'text': text,
-                'pattern_id': pattern_id,
-                len(attributes.keys()) && 'attributes': attributes,
+                'patterns': json.dumps(patterns),
             })
 
         if (re.search('play', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE) \
