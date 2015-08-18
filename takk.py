@@ -14,10 +14,12 @@ from hue import Hue
 from mpd import MPD
 from config import Config
 from logger import Logger
+from rules import Rules
 
 class Takk():
     __config = Config.get_config()
     __logger = Logger.get_logger(__name__)
+    __takk_basedir = Armando.get_base_dir() + os.sep + 'share' + os.sep + 'Takk'
 
     def __init__(self):
         self.__logger.info({
@@ -25,20 +27,40 @@ class Takk():
             'config': self.__config.dump(),
         })
 
-        self.audio = AudioSource()
-        self.audio.record_to_flac()
+        audio = AudioSource()
+        audio.record_to_flac()
 
-        self.speech = SpeechRecognition()
+        speech = SpeechRecognition()
 
         try:
-            text, confidence = self.speech.recognize_speech_from_file()
+            text, confidence = speech.recognize_speech_from_file()
+            self.__logger.info({
+                'msg_type': 'Speech recognized',
+                'text': text,
+                'confidence': confidence,
+            })
+
         except SpeechRecognitionError as e:
             # TODO Properly manage the raised exception with a retry mechanism, see #13
-            self.__logger.warning({
+            self.__logger.info({
                 'msg_type': 'Speech not recognized',
             })
 
-            raise e
+        rules = Rules(self.__takk_basedir + os.sep + 'rules.xml')
+        pattern_id, attributes = rules.pattern_match(text.strip())
+
+        if pattern_id is None:
+            self.__logger.info({
+                'msg_type': 'No pattern matched',
+                'text': text,
+            })
+        else:
+            self.__logger.info({
+                'msg_type': 'Pattern matched',
+                'text': text,
+                'pattern_id': pattern_id,
+                len(attributes.keys()) && 'attributes': attributes,
+            })
 
         if (re.search('play', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE) \
                 or \

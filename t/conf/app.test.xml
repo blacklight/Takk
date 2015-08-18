@@ -6,36 +6,70 @@
 			]]></match>
 		</pattern>
 
-		<pattern id="pause-music">
+		<pattern id="create-file">
 			<match><![CDATA[
-				stop\s*.*music
+				create\s*.*file\s*{filename[regex-index=1]}
+			]]></match>
+		</pattern>
+
+		<pattern id="remove-file">
+			<match><![CDATA[
+				remove\s*.*file\s*{filename[regex-index=1]}
 			]]></match>
 		</pattern>
 	</patterns>
 
 	<actions>
-		<action id="mpd-play" type="python"><![CDATA[
-			from MPD import mpd
-			MPD().server_cmd('play')
+		<action id="create-test-file-python" type="python" args="filename"><![CDATA[
+			open("$$filename$$", "w").close()
 		]]></action>
 
-		<action id="mpd-pause" type="python"><![CDATA[
-			from MPD import mpd
-			MPD().server_cmd('pause')
+		<action id="remove-test-file-python" type="python" args="filename"><![CDATA[
+			os.remove("$$filename$$")
+		]]></action>
+
+		<action id="create-test-file-shell" type="shell" args="filename"><![CDATA[
+			touch "$$filename$$"
+		]]></action>
+
+		<action id="remove-test-file-shell" type="shell" args="filename"><![CDATA[
+			rm "$$filename$$"
 		]]></action>
 	</actions>
 
 	<rules>
-		<rule id="mpd-play-on-play-music">
-			<on pattern-id="play-music">
-				<then action-id="mpd-play"/>
+		<rule id="create-test-file-shell-on-create-file">
+			<on>
+				<pattern id="create-file"/>
 			</on>
+
+			<then>
+				<action id="create-test-file-shell"/>
+			</then>
 		</rule>
 
-		<rule id="mpd-pause-on-pause-music">
-			<on pattern-id="pause-music">
-				<then action-id="mpd-pause"/>
+		<rule id="remove-test-file-shell-on-remove-file">
+			<on>
+				<pattern id="remove-file"/>
 			</on>
+
+			<then>
+				<action id="remove-test-file-shell"/>
+			</then>
+		</rule>
+
+		<rule id="create-and-remove-test-file-shell-on-double-command">
+			<on>
+				<and>
+					<pattern id="create-file"/>
+					<pattern id="remove-file"/>
+				</and>
+			</on>
+
+			<then>
+				<action id="create-test-file-shell"/>
+				<action id="remove-test-file-shell"/>
+			</then>
 		</rule>
 	</rules>
 </app>

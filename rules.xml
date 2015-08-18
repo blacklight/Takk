@@ -2,26 +2,52 @@
 	<patterns>
 		<pattern id="play-music">
 			<match><![CDATA[
-				play\s*.*music\s*(artist {artist[regex-index=2]}\s*)?(album {album[regex-index=4]}\s*)?(title {title[regex-index=6]}\s*)?
+				\s*play\s*.*music\s*(artist {artist[regex-index=2]}\s*)?(album {album[regex-index=4]}\s*)?(title {title[regex-index=6]}\s*)?
 			]]></match>
 		</pattern>
 
 		<pattern id="pause-music">
 			<match><![CDATA[
-				stop\s*.*music
+				\s*stop\s*.*music\s*
+			]]></match>
+		</pattern>
+
+		<pattern id="lights-on">
+			<match><![CDATA[
+				\s*lights\s*.*on\s*
+			]]></match>
+		</pattern>
+
+		<pattern id="lights-off">
+			<match><![CDATA[
+				\s*lights\s*.*off\s*
 			]]></match>
 		</pattern>
 	</patterns>
 
 	<actions>
 		<action id="mpd-play" type="python"><![CDATA[
-			from MPD import mpd
-			MPD().server_cmd('play')
+from MPD import mpd
+MPD().server_cmd('play')
 		]]></action>
 
 		<action id="mpd-pause" type="python"><![CDATA[
-			from MPD import mpd
-			MPD().server_cmd('pause')
+from MPD import mpd
+MPD().server_cmd('pause')
+		]]></action>
+
+		<action id="hue-lights-on" type="python"><![CDATA[
+from hue import Hue
+hue = Hue()
+hue.connect()
+hue.set_on(True)
+		]]></action>
+
+		<action id="hue-lights-off" type="python"><![CDATA[
+from hue import Hue
+hue = Hue()
+hue.connect()
+hue.set_on(False)
 		]]></action>
 	</actions>
 
@@ -35,6 +61,18 @@
 		<rule id="mpd-pause-on-pause-music">
 			<on pattern-id="pause-music">
 				<then action-id="mpd-pause"/>
+			</on>
+		</rule>
+
+		<rule id="hue-lights-on-on-lights-on">
+			<on pattern-id="lights-on">
+				<then action-id="hue-lights-on"/>
+			</on>
+		</rule>
+
+		<rule id="hue-lights-off-off-lights-off">
+			<on pattern-id="lights-off">
+				<then action-id="hue-lights-off"/>
 			</on>
 		</rule>
 	</rules>
