@@ -26,54 +26,58 @@
 	</patterns>
 
 	<actions>
-		<action id="mpd-play" type="python"><![CDATA[
-from MPD import mpd
-MPD().server_cmd('play')
+		<action id="mpd-play" type="shell"><![CDATA[
+			mpc play
 		]]></action>
 
-		<action id="mpd-pause" type="python"><![CDATA[
-from MPD import mpd
-MPD().server_cmd('pause')
+		<action id="mpd-pause" type="shell"><![CDATA[
+			mpc pause
 		]]></action>
 
-		<action id="hue-lights-on" type="python"><![CDATA[
-from hue import Hue
-hue = Hue()
-hue.connect()
-hue.set_on(True)
+		<action id="hue-lights-on" type="shell"><![CDATA[
+			huectrl -b hue --on
 		]]></action>
 
-		<action id="hue-lights-off" type="python"><![CDATA[
-from hue import Hue
-hue = Hue()
-hue.connect()
-hue.set_on(False)
+		<action id="hue-lights-off" type="shell"><![CDATA[
+			huectrl -b hue --off
 		]]></action>
 	</actions>
 
 	<rules>
 		<rule id="mpd-play-on-play-music">
-			<on pattern-id="play-music">
-				<then action-id="mpd-play"/>
+			<on>
+				<pattern id="play-music"/>
 			</on>
+			<then>
+				<action id="mpd-play"/>
+			</then>
 		</rule>
 
 		<rule id="mpd-pause-on-pause-music">
-			<on pattern-id="pause-music">
-				<then action-id="mpd-pause"/>
+			<on>
+				<pattern id="pause-music"/>
 			</on>
+			<then>
+				<action id="mpd-pause"/>
+			</then>
 		</rule>
 
 		<rule id="hue-lights-on-on-lights-on">
-			<on pattern-id="lights-on">
-				<then action-id="hue-lights-on"/>
+			<on>
+				<pattern id="lights-on"/>
 			</on>
+			<then>
+				<action id="hue-lights-on"/>
+			</then>
 		</rule>
 
 		<rule id="hue-lights-off-off-lights-off">
-			<on pattern-id="lights-off">
-				<then action-id="hue-lights-off"/>
+			<on>
+				<pattern id="lights-off"/>
 			</on>
+			<then>
+				<action id="hue-lights-off"/>
+			</then>
 		</rule>
 	</rules>
 </app>

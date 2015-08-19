@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 from __armando__ import Armando
-import json, os, re, sys, inspect, traceback
+import json, re, traceback
 
 ###
 Armando.initialize()
@@ -16,10 +16,9 @@ from config import Config
 from logger import Logger
 from rules import Rules
 
-class Takk():
+class Takk(object):
     __config = Config.get_config()
     __logger = Logger.get_logger(__name__)
-    __takk_basedir = Armando.get_base_dir() + os.sep + 'share' + os.sep + 'Takk'
 
     def __init__(self):
         self.__logger.info({
@@ -46,7 +45,7 @@ class Takk():
                 'msg_type': 'Speech not recognized',
             })
 
-        rules = Rules(self.__takk_basedir + os.sep + 'rules.xml')
+        rules = Rules('rules.xml')
         patterns = rules.pattern_match(text.strip())
 
         if len(patterns) == 0:
@@ -61,31 +60,30 @@ class Takk():
                 'patterns': json.dumps(patterns),
             })
 
-        if (re.search('play', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE) \
-                or \
-                re.search('musica', text.lower(), re.IGNORECASE) and re.search('avvia', text.lower(), re.IGNORECASE)):
-            self.mpd = MPD()
-            self.mpd.server_cmd('play')
+            pattern_ids = list(map(lambda _: _['id'], patterns))
+            matched_rules = rules.get_rules_by_patterns(pattern_ids)
 
-        if (re.search('stop', text.lower(), re.IGNORECASE) and re.search('music', text.lower(), re.IGNORECASE) \
-                or \
-                re.search('musica', text.lower(), re.IGNORECASE) and re.search('spegni', text.lower(), re.IGNORECASE)):
-            self.mpd = MPD()
-            self.mpd.server_cmd('pause')
+            if len(matched_rules) == 0:
+                self.__logger.info({
+                    'msg_type': 'No rules associated to the matched patterns',
+                    'patterns': json.dumps(patterns),
+                })
+            else:
+                self.__logger.info({
+                    'msg_type': 'Rules found',
+                    'patterns': json.dumps(patterns),
+                    'rules': json.dumps(matched_rules),
+                })
 
-        if (re.search('lights', text.lower(), re.IGNORECASE) and re.search('on', text.lower(), re.IGNORECASE) \
-                or \
-                re.search('luci', text.lower(), re.IGNORECASE) and re.search('accend', text.lower(), re.IGNORECASE)):
-            self.hue = Hue()
-            self.hue.connect()
-            self.hue.set_on(True)
-
-        if (re.search('lights', text.lower(), re.IGNORECASE) and re.search('off', text.lower(), re.IGNORECASE) \
-                or \
-                re.search('luci', text.lower(), re.IGNORECASE) and re.search('spegn', text.lower(), re.IGNORECASE)):
-            self.hue = Hue()
-            self.hue.connect()
-            self.hue.set_on(False)
+                # TODO We only pick up the first rule for now.
+                # Eventually we should build a map of all the
+                # actions associated to the matched patterns
+                # according to the provided rules and establish
+                # a priority for executing all of them.
+                rule = matched_rules[0]
+                actions = rules.get_actions_by_rule(rule)
+                for action in actions:
+                    rules.run_action(action)
 
 if __name__ == '__main__':
     try:
