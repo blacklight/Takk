@@ -26,21 +26,37 @@
 	</patterns>
 
 	<actions>
-		<action id="mpd-play" type="shell"><![CDATA[
-			mpc play
+		<action id="mpd-play" type="python"><![CDATA[
+			MPD.get_mpd().server_cmd('play')
 		]]></action>
 
-		<action id="mpd-pause" type="shell"><![CDATA[
-			mpc pause
+		<!-- <action id="mpd-play" type="shell"><![CDATA[ -->
+		<!-- 	mpc play -->
+		<!-- ]]></action> -->
+
+		<action id="mpd-pause" type="python"><![CDATA[
+			MPD.get_mpd().server_cmd('pause')
 		]]></action>
 
-		<action id="hue-lights-on" type="shell"><![CDATA[
-			huectrl -b hue --on
+		<!-- <action id="mpd-pause" type="shell"><![CDATA[ -->
+		<!-- 	mpc pause -->
+		<!-- ]]></action> -->
+
+		<action id="hue-lights-on" type="python"><![CDATA[
+			Hue.get_hue().connect().set_on(True).set_bri(255)
 		]]></action>
 
-		<action id="hue-lights-off" type="shell"><![CDATA[
-			huectrl -b hue --off
+		<!-- <action id="hue-lights-on" type="shell"><![CDATA[ -->
+		<!-- 	huectrl -b hue \-\-on -->
+		<!-- ]]></action> -->
+
+		<action id="hue-lights-off" type="python"><![CDATA[
+			Hue.get_hue().connect().set_on(False)
 		]]></action>
+
+		<!-- <action id="hue-lights-off" type="shell"><![CDATA[ -->
+		<!-- 	huectrl -b hue \-\-off -->
+		<!-- ]]></action> -->
 	</actions>
 
 	<rules>
