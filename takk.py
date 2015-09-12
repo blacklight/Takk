@@ -30,6 +30,8 @@ class Takk(object):
         audio.record_to_flac()
 
         speech = SpeechRecognition()
+        text = None
+        confidence = None
 
         try:
             text, confidence = speech.recognize_speech_from_file()
